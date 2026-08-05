@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Agendamento | 3S Elétrica Automotiva</title>
+<meta name="description" content="Agende seu serviço online" />
+
+<!-- Tailwind via CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Fontes: Oswald (títulos, estilo industrial condensado), Inter (corpo), JetBrains Mono (dados técnicos) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg:      '#14171C',
+          panel:   '#1E222A',
+          panel2:  '#262B35',
+          edge:    '#333844',
+          accent:  '#F5A623',
+          accent2: '#FFC857',
+          ok:      '#22C55E',
+          danger:  '#EF4444',
+          ink:     '#EDEBE6',
+          dim:     '#9CA3AF',
+        },
+        fontFamily: {
+          display: ['Oswald', 'sans-serif'],
+          body: ['Inter', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        }
+      }
+    }
+  }
+</script>
+
+<style>
+  body { background-color: #14171C; }
+  .stripe-edge {
+    background-image: repeating-linear-gradient(45deg, #F5A623 0, #F5A623 10px, #14171C 10px, #14171C 20px);
+  }
+  .breaker {
+    transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease, background-color .12s ease;
+  }
+  .breaker:not(:disabled):hover { transform: translateY(-2px); }
+  .breaker:not(:disabled):active { transform: translateY(0); }
+  .breaker[data-state="selecionado"] {
+    border-color: #F5A623;
+    background-color: rgba(245,166,35,0.12);
+    box-shadow: 0 0 0 1px #F5A623, 0 0 18px rgba(245,166,35,0.35);
+  }
+  .breaker[data-state="ocupado"] {
+    background-color: #191c22;
+    border-color: #2a2e37;
+    cursor: not-allowed;
+    opacity: .55;
+  }
+  .led {
+    width: 8px; height: 8px; border-radius: 999px; display: inline-block;
+  }
+  input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.8); cursor: pointer; }
+  ::selection { background: #F5A623; color: #14171C; }
+  .fade-in { animation: fadeIn .25s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: translateY(0);} }
+  @media (prefers-reduced-motion: reduce) {
+    .breaker, .fade-in { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+
+<body class="bg-bg text-ink font-body min-h-screen">
+
+  <!-- ============================================================= -->
+  <!-- CABEÇALHO -->
+  <!-- ============================================================= -->
+  <header class="border-b border-edge">
+    <div class="h-1.5 stripe-edge"></div>
+    <div class="max-w-3xl mx-auto px-5 py-6 flex items-center gap-4">
+      <div class="w-11 h-11 rounded-md bg-panel2 border border-edge flex items-center justify-center shrink-0">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F5A623" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"/></svg>
+      </div>
+      <div>
+        <h1 class="font-display uppercase tracking-wide text-2xl leading-none text-ink">3S <span class="text-accent">Elétrica Automotiva</span></h1>
+        <p class="text-dim text-sm mt-1">Diagnóstico | Manutenção | Sistemas Elétricos</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-5 py-8 space-y-8">
+
+    <!-- ============================================================= -->
+    <!-- FORMULÁRIO -->
+    <!-- ============================================================= -->
+    <form id="form-agendamento" class="space-y-8" novalidate>
+
+      <!-- BLOCO 1: Cliente e veículo -->
+      <section class="bg-panel border border-edge rounded-xl p-5 sm:p-6">
+        <div class="flex items-center gap-2 mb-5">
+          <span class="font-mono text-accent text-xs border border-accent/40 rounded px-1.5 py-0.5">01</span>
+          <h2 class="font-display uppercase tracking-wide text-lg text-ink">Cliente &amp; Veículo</h2>
+        </div>
+
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div class="sm:col-span-2">
+            <label for="cliente_nome" class="block text-sm text-dim mb-1.5">Nome completo *</label>
+            <input required id="cliente_nome" name="cliente_nome" type="text" autocomplete="name"
+              class="w-full bg-panel2 border border-edge rounded-lg px-3.5 py-2.5 text-ink placeholder:text-dim/60 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent"
+              placeholder="Ex: João da Silva" />
+          </div>
+
+          <div>
+            <label for="cliente_whatsapp" class="block text-sm text-dim mb-1.5">WhatsApp *</label>
+            <input required id="cliente_whatsapp" name="cliente_whatsapp" type="tel" inputmode="tel" autocomplete="tel" maxlength="15"
+              class="w-full bg-panel2 border border-edge rounded-lg px-3.5 py-2.5 text-ink font-mono placeholder:text-dim/60 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent"
+              placeholder="(00) 00000-0000" />
+            <p class="text-xs text-dim mt-1">Usaremos apenas para confirmar o agendamento.</p>
+          </div>
+
+          <div>
+            <label for="veiculo_modelo" class="block text-sm text-dim mb-1.5">Modelo do veículo *</label>
+            <input required id="veiculo_modelo" name="veiculo_modelo" type="text"
+              class="w-full bg-panel2 border border-edge rounded-lg px-3.5 py-2.5 text-ink placeholder:text-dim/60 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent"
+              placeholder="Ex: Gol G5, Strada 1.4" />
+          </div>
+
+          <div class="sm:col-span-2">
+            <label for="placa_veiculo" class="block text-sm text-dim mb-1.5">Placa <span class="text-dim/70">(opcional)</span></label>
+            <input id="placa_veiculo" name="placa_veiculo" type="text" maxlength="8"
+              class="w-full sm:w-52 bg-panel2 border border-edge rounded-lg px-3.5 py-2.5 text-ink font-mono uppercase placeholder:text-dim/60 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent"
+              placeholder="ABC1D23" />
+          </div>
+        </div>
+      </section>
+
+      <!-- BLOCO 2: Problema -->
+      <section class="bg-panel border border-edge rounded-xl p-5 sm:p-6">
+        <div class="flex items-center gap-2 mb-5">
+          <span class="font-mono text-accent text-xs border border-accent/40 rounded px-1.5 py-0.5">02</span>
+          <h2 class="font-display uppercase tracking-wide text-lg text-ink">O que está acontecendo</h2>
+        </div>
+
+        <div class="grid gap-4">
+          <div>
+            <label for="categoria_problema" class="block text-sm text-dim mb-1.5">Categoria do defeito *</label>
+            <select required id="categoria_problema" name="categoria_problema"
+              class="w-full bg-panel2 border border-edge rounded-lg px-3.5 py-2.5 text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent">
+              <option value="" disabled selected>Selecione uma categoria</option>
+              <option value="Bateria">Bateria</option>
+              <option value="Injeção">Injeção eletrônica</option>
+              <option value="Alternador/Partida">Alternador / Motor de partida</option>
+              <option value="Ar-condicionado">Ar-condicionado</option>
+              <option value="Outros">Outros</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="descricao_problema" class="block text-sm text-dim mb-1.5">Descreva o problema com detalhes</label>
+            <textarea id="descricao_problema" name="descricao_problema" rows="3"
+              class="w-full bg-panel2 border border-edge rounded-lg px-3.5 py-2.5 text-ink placeholder:text-dim/60 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent resize-none"
+              placeholder="Ex: O carro não pega pela manhã, luz da bateria pisca no painel..."></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- BLOCO 3: Data e horário -->
+      <section class="bg-panel border border-edge rounded-xl p-5 sm:p-6">
+        <div class="flex items-center gap-2 mb-5">
+          <span class="font-mono text-accent text-xs border border-accent/40 rounded px-1.5 py-0.5">03</span>
+          <h2 class="font-display uppercase tracking-wide text-lg text-ink">Data &amp; Horário</h2>
+        </div>
+
+        <div class="mb-5">
+          <label for="data_agendamento" class="block text-sm text-dim mb-1.5">Escolha o dia *</label>
+          <input required id="data_agendamento" name="data_agendamento" type="date"
+            class="w-full sm:w-64 bg-panel2 border border-edge rounded-lg px-3.5 py-2.5 text-ink font-mono focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent" />
+          <p id="msg-domingo" class="text-xs text-danger mt-1.5 hidden">Não atendemos aos domingos — escolha outro dia.</p>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-sm text-dim">Painel de horários disponíveis *</label>
+            <div class="flex items-center gap-3 text-xs text-dim">
+              <span class="flex items-center gap-1"><span class="led bg-edge border border-dim/40"></span> livre</span>
+              <span class="flex items-center gap-1"><span class="led bg-accent"></span> selecionado</span>
+              <span class="flex items-center gap-1"><span class="led bg-panel2 border border-edge"></span> ocupado</span>
+            </div>
+          </div>
+
+          <div id="grade-horarios" class="grid grid-cols-3 sm:grid-cols-6 gap-2.5">
+            <!-- botões de horário injetados via JS -->
+          </div>
+          <p id="msg-horarios" class="text-xs text-dim mt-2">Selecione uma data para ver os horários disponíveis.</p>
+        </div>
+      </section>
+
+      <!-- Erro geral -->
+      <div id="erro-geral" class="hidden fade-in bg-danger/10 border border-danger/40 text-danger rounded-lg px-4 py-3 text-sm"></div>
+
+      <!-- Envio -->
+      <button type="submit" id="btn-enviar"
+        class="w-full bg-accent hover:bg-accent2 disabled:opacity-50 disabled:cursor-not-allowed text-bg font-display uppercase tracking-wide text-base font-semibold rounded-xl py-3.5 transition-colors">
+        Confirmar agendamento
+      </button>
+    </form>
+  </main>
+
+  <footer class="max-w-3xl mx-auto px-5 pb-10 pt-2 text-center text-xs text-dim">
+    Oficina Auto Elétrica Central &middot; Atendimento de segunda a sábado
+  </footer>
+
+  <!-- ============================================================= -->
+  <!-- MODAL DE SUCESSO -->
+  <!-- ============================================================= -->
+  <div id="modal-sucesso" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="fade-in bg-panel border border-edge rounded-2xl max-w-sm w-full p-6 text-center">
+      <div class="w-14 h-14 rounded-full bg-ok/15 border border-ok/40 flex items-center justify-center mx-auto mb-4">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h3 class="font-display uppercase tracking-wide text-xl text-ink mb-2">Agendamento confirmado</h3>
+      <p id="modal-detalhes" class="text-dim text-sm mb-6 leading-relaxed"></p>
+
+      <a id="btn-whatsapp" href="#" target="_blank" rel="noopener"
+        class="flex items-center justify-center gap-2 w-full bg-ok hover:brightness-110 text-bg font-semibold rounded-xl py-3 mb-2.5 transition">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.2h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2m0 1.67c2.24 0 4.35.87 5.94 2.46a8.24 8.24 0 0 1 2.43 5.87c0 4.57-3.72 8.29-8.31 8.29a8.3 8.3 0 0 1-4.22-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.22 8.22 0 0 1-1.28-4.43c0-4.58 3.72-8.33 8.23-8.33m-4.6 4.72c-.16 0-.43.06-.66.31-.22.25-.86.84-.86 2.05 0 1.21.88 2.38 1 2.54.13.17 1.7 2.71 4.2 3.7 2.07.82 2.49.66 2.94.62.45-.04 1.45-.59 1.65-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.46-.28-.25-.13-1.45-.72-1.67-.8-.23-.08-.39-.13-.55.13-.17.25-.64.8-.78.97-.14.16-.28.18-.53.06-.25-.13-1.05-.39-2-1.23a7.5 7.5 0 0 1-1.39-1.72c-.15-.25-.02-.38.11-.51.11-.11.25-.28.37-.42.13-.14.17-.25.25-.41.08-.17.04-.31-.02-.44-.06-.13-.55-1.34-.76-1.83-.2-.48-.4-.42-.55-.42Z"/></svg>
+        Enviar confirmação no WhatsApp
+      </a>
+      <button id="btn-fechar-modal" class="w-full text-dim hover:text-ink text-sm py-2">Fechar</button>
+    </div>
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- LÓGICA DA APLICAÇÃO -->
+  <!-- ============================================================= -->
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+    // ---------------------------------------------------------------
+    // CONFIGURAÇÃO — substitua pelos dados do seu projeto Supabase
+    // ---------------------------------------------------------------
+    const SUPABASE_URL = 'sb_publishable_1LzCXlyDdmmqBkhBqkMkGg_fspEy18R'
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92bnZpdG12dnBmdGx5cGh1ZGRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5Mzg5NDcsImV4cCI6MjEwMTUxNDk0N30.x1e-jEt1SzRYT9ftjkWo8PzN3JL6UefomePi1XwpzIU'
+
+    // Número de WhatsApp da oficina (formato internacional, só dígitos)
+    const OFICINA_WHATSAPP = '558499353641'
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+    // Horários de atendimento oferecidos
+    const HORARIOS = ['08:00', '09:30', '11:00', '13:30', '15:00', '16:30']
+
+    // ---------------------------------------------------------------
+    // ELEMENTOS
+    // ---------------------------------------------------------------
+    const form            = document.getElementById('form-agendamento')
+    const inputData        = document.getElementById('data_agendamento')
+    const msgDomingo       = document.getElementById('msg-domingo')
+    const gradeHorarios    = document.getElementById('grade-horarios')
+    const msgHorarios      = document.getElementById('msg-horarios')
+    const inputWhatsapp    = document.getElementById('cliente_whatsapp')
+    const inputPlaca       = document.getElementById('placa_veiculo')
+    const erroGeral        = document.getElementById('erro-geral')
+    const btnEnviar        = document.getElementById('btn-enviar')
+    const modalSucesso     = document.getElementById('modal-sucesso')
+    const modalDetalhes    = document.getElementById('modal-detalhes')
+    const btnWhatsapp      = document.getElementById('btn-whatsapp')
+    const btnFecharModal   = document.getElementById('btn-fechar-modal')
+
+    let horarioSelecionado = null
+
+    // ---------------------------------------------------------------
+    // DATA MÍNIMA = HOJE
+    // ---------------------------------------------------------------
+    function hojeISO() {
+      const d = new Date()
+      d.setMinutes(d.getMinutes() - d.getTimezoneOffset()) // ajusta fuso local
+      return d.toISOString().slice(0, 10)
+    }
+    inputData.min = hojeISO()
+
+    // ---------------------------------------------------------------
+    // MÁSCARA DE WHATSAPP: (00) 00000-0000
+    // ---------------------------------------------------------------
+    inputWhatsapp.addEventListener('input', () => {
+      let v = inputWhatsapp.value.replace(/\D/g, '').slice(0, 11)
+      if (v.length > 6) v = `(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`
+      else if (v.length > 2) v = `(${v.slice(0,2)}) ${v.slice(2)}`
+      else if (v.length > 0) v = `(${v}`
+      inputWhatsapp.value = v
+    })
+
+    inputPlaca.addEventListener('input', () => {
+      inputPlaca.value = inputPlaca.value.toUpperCase()
+    })
+
+    // ---------------------------------------------------------------
+    // RENDERIZA A GRADE DE HORÁRIOS
+    // ---------------------------------------------------------------
+    function renderGrade(ocupados = []) {
+      gradeHorarios.innerHTML = ''
+      horarioSelecionado = null
+
+      const dataSelecionada = inputData.value
+      const agora = new Date()
+      const ehHoje = dataSelecionada === hojeISO()
+
+      HORARIOS.forEach(hora => {
+        const btn = document.createElement('button')
+        btn.type = 'button'
+        btn.className = 'breaker border border-edge rounded-lg py-3 flex flex-col items-center gap-1.5 bg-panel2'
+        btn.dataset.hora = hora
+
+        const ocupado = ocupados.includes(hora)
+        const horaPassada = ehHoje && horaJaPassou(hora, agora)
+        const indisponivel = ocupado || horaPassada
+
+        if (indisponivel) {
+          btn.disabled = true
+          btn.dataset.state = 'ocupado'
+        } else {
+          btn.dataset.state = 'livre'
+        }
+
+        btn.innerHTML = `
+          <span class="led ${indisponivel ? 'bg-edge' : 'bg-ok'}"></span>
+          <span class="font-mono text-sm ${indisponivel ? 'text-dim' : 'text-ink'}">${hora}</span>
+          <span class="text-[10px] uppercase tracking-wide text-dim">${indisponivel ? (ocupado ? 'ocupado' : 'encerrado') : 'livre'}</span>
+        `
+
+        if (!indisponivel) {
+          btn.addEventListener('click', () => selecionarHorario(btn))
+        }
+
+        gradeHorarios.appendChild(btn)
+      })
+
+      msgHorarios.textContent = `Horários para ${formatarDataBR(dataSelecionada)}. Toque em um horário livre para selecioná-lo.`
+    }
+
+    function horaJaPassou(horaStr, agora) {
+      const [h, m] = horaStr.split(':').map(Number)
+      const alvo = new Date(agora)
+      alvo.setHours(h, m, 0, 0)
+      return alvo.getTime() <= agora.getTime()
+    }
+
+    function selecionarHorario(btnClicado) {
+      gradeHorarios.querySelectorAll('.breaker').forEach(b => {
+        if (b.dataset.state !== 'ocupado') b.dataset.state = 'livre'
+      })
+      btnClicado.dataset.state = 'selecionado'
+      horarioSelecionado = btnClicado.dataset.hora
+      esconderErro()
+    }
+
+    // ---------------------------------------------------------------
+    // CONSULTA DISPONIBILIDADE NO SUPABASE AO TROCAR A DATA
+    // ---------------------------------------------------------------
+    async function carregarDisponibilidade() {
+      const dataSelecionada = inputData.value
+      if (!dataSelecionada) return
+
+      const diaSemana = new Date(dataSelecionada + 'T00:00:00').getDay() // 0 = domingo
+      if (diaSemana === 0) {
+        msgDomingo.classList.remove('hidden')
+        gradeHorarios.innerHTML = ''
+        msgHorarios.textContent = ''
+        inputData.value = ''
+        return
+      }
+      msgDomingo.classList.add('hidden')
+
+      msgHorarios.textContent = 'Consultando horários disponíveis...'
+      gradeHorarios.innerHTML = ''
+
+      const { data, error } = await supabase
+        .from('agendamentos')
+        .select('hora_agendamento')
+        .eq('data_agendamento', dataSelecionada)
+        .eq('status', 'confirmado')
+
+      if (error) {
+        mostrarErro('Não foi possível carregar os horários. Verifique sua conexão e tente novamente.')
+        console.error(error)
+        return
+      }
+
+      const ocupados = data.map(item => item.hora_agendamento.slice(0, 5))
+      renderGrade(ocupados)
+    }
+
+    inputData.addEventListener('change', carregarDisponibilidade)
+
+    // ---------------------------------------------------------------
+    // ENVIO DO FORMULÁRIO
+    // ---------------------------------------------------------------
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault()
+      esconderErro()
+
+      if (!inputData.value) return mostrarErro('Escolha uma data para o agendamento.')
+      if (!horarioSelecionado) return mostrarErro('Escolha um horário disponível no painel.')
+
+      const dados = {
+        cliente_nome: form.cliente_nome.value.trim(),
+        cliente_whatsapp: form.cliente_whatsapp.value.trim(),
+        veiculo_modelo: form.veiculo_modelo.value.trim(),
+        placa_veiculo: form.placa_veiculo.value.trim() || null,
+        categoria_problema: form.categoria_problema.value,
+        descricao_problema: form.descricao_problema.value.trim() || null,
+        data_agendamento: inputData.value,
+        hora_agendamento: horarioSelecionado,
+      }
+
+      if (dados.cliente_whatsapp.replace(/\D/g, '').length < 10) {
+        return mostrarErro('Informe um número de WhatsApp válido, com DDD.')
+      }
+
+      btnEnviar.disabled = true
+      btnEnviar.textContent = 'Enviando...'
+
+      const { error } = await supabase.from('agendamentos').insert(dados)
+
+      btnEnviar.disabled = false
+      btnEnviar.textContent = 'Confirmar agendamento'
+
+      if (error) {
+        // 23505 = violação de UNIQUE -> alguém acabou de pegar este horário
+        if (error.code === '23505') {
+          mostrarErro('Esse horário acabou de ser reservado por outro cliente. Escolha outro horário abaixo.')
+          await carregarDisponibilidade()
+        } else {
+          mostrarErro('Não foi possível concluir o agendamento. Tente novamente em instantes.')
+          console.error(error)
+        }
+        return
+      }
+
+      mostrarSucesso(dados)
+      form.reset()
+      gradeHorarios.innerHTML = ''
+      msgHorarios.textContent = 'Selecione uma data para ver os horários disponíveis.'
+    })
+
+    // ---------------------------------------------------------------
+    // MENSAGENS DE ERRO
+    // ---------------------------------------------------------------
+    function mostrarErro(texto) {
+      erroGeral.textContent = texto
+      erroGeral.classList.remove('hidden')
+      erroGeral.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+    function esconderErro() {
+      erroGeral.classList.add('hidden')
+    }
+
+    // ---------------------------------------------------------------
+    // MODAL DE SUCESSO + LINK DO WHATSAPP
+    // ---------------------------------------------------------------
+    function mostrarSucesso(dados) {
+      const dataFmt = formatarDataBR(dados.data_agendamento)
+      modalDetalhes.textContent = `${dados.veiculo_modelo} · ${dataFmt} às ${dados.hora_agendamento}. Guarde essas informações.`
+
+      const texto = [
+        `Olá! Gostaria de confirmar meu agendamento na oficina:`,
+        `Nome: ${dados.cliente_nome}`,
+        `Veículo: ${dados.veiculo_modelo}${dados.placa_veiculo ? ' - Placa: ' + dados.placa_veiculo : ''}`,
+        `Categoria: ${dados.categoria_problema}`,
+        `Data: ${dataFmt}`,
+        `Horário: ${dados.hora_agendamento}`,
+      ].join('\n')
+
+      btnWhatsapp.href = `https://wa.me/${OFICINA_WHATSAPP}?text=${encodeURIComponent(texto)}`
+      modalSucesso.classList.remove('hidden')
+    }
+    btnFecharModal.addEventListener('click', () => modalSucesso.classList.add('hidden'))
+    modalSucesso.addEventListener('click', (e) => { if (e.target === modalSucesso) modalSucesso.classList.add('hidden') })
+
+    // ---------------------------------------------------------------
+    // UTILITÁRIO
+    // ---------------------------------------------------------------
+    function formatarDataBR(iso) {
+      const [ano, mes, dia] = iso.split('-')
+      return `${dia}/${mes}/${ano}`
+    }
+  </script>
+</body>
+</html>

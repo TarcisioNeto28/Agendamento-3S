@@ -231,7 +231,6 @@
       return div
     }
 
-    // Requisito 2: Botão no painel para responder e confirmar direto no WhatsApp do cliente
     function notificarClienteWhatsApp(item) {
       const numLimpo = item.cliente_whatsapp.replace(/\D/g, '')
       const numCompleto = numLimpo.length <= 11 ? '55' + numLimpo : numLimpo

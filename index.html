@@ -342,7 +342,7 @@
         .eq('status', 'confirmado')
 
       if (error) {
-        mostrarErro('Não foi possível carregar os horários. Verifique sua conexão e tente novamente.')
+        mostrarErro('Não foi possível carregar os horários.')
         console.error(error)
         return
       }
@@ -357,7 +357,6 @@
       e.preventDefault()
       esconderErro()
 
-      // Validação do Requisito 3: Todos os campos obrigatórios
       const nome = form.cliente_nome.value.trim()
       const whatsapp = form.cliente_whatsapp.value.trim()
       const modelo = form.veiculo_modelo.value.trim()
@@ -366,7 +365,7 @@
       const descricao = form.descricao_problema.value.trim()
 
       if (!nome || !whatsapp || !modelo || !placa || !categoria || !descricao) {
-        return mostrarErro('Por favor, preencha TODOS os campos obrigatórios do formulário.')
+        return mostrarErro('Por favor, preencha TODOS os campos obrigatórios.')
       }
 
       if (whatsapp.replace(/\D/g, '').length < 10) {
@@ -384,13 +383,14 @@
         categoria_problema: categoria,
         descricao_problema: descricao,
         data_agendamento: inputData.value,
-        hora_agendamento: horarioSelecionado
+        hora_agendamento: `${horarioSelecionado}:00`,
+        status: 'confirmado'
       }
 
       btnEnviar.disabled = true
       btnEnviar.textContent = 'Enviando...'
 
-      const { error } = await supabase.from('agendamentos').insert(dados)
+      const { error } = await supabase.from('agendamentos').insert([dados])
 
       btnEnviar.disabled = false
       btnEnviar.textContent = 'Solicitar Agendamento'
@@ -398,15 +398,14 @@
       if (error) {
         console.error('Erro ao inserir agendamento:', error)
         if (error.code === '23505') {
-          mostrarErro('Esse horário acabou de ser reservado por outro cliente. Escolha outro horário.')
+          mostrarErro('Esse horário acabou de ser reservado. Escolha outro horário.')
           await carregarDisponibilidade()
         } else {
-          mostrarErro('Não foi possível concluir o agendamento. Detalhes: ' + (error.message || 'Erro de permissão no banco.'))
+          mostrarErro('Erro ao agendar: ' + (error.message || 'Verifique sua conexão.'))
         }
         return
       }
 
-      // Requisito 1: Envio automático para o WhatsApp da Oficina sem solicitar confirmação
       const dataFmt = formatarDataBR(dados.data_agendamento)
       const textoOficina = [
         `*NOVO PEDIDO DE AGENDAMENTO*`,
@@ -417,12 +416,12 @@
         `*Categoria:* ${dados.categoria_problema}`,
         `*Descrição:* ${dados.descricao_problema}`,
         `*Data Pretendida:* ${dataFmt}`,
-        `*Horário Pretendido:* ${dados.hora_agendamento}`
+        `*Horário Pretendido:* ${horarioSelecionado}`
       ].join('\n')
 
       window.open(`https://wa.me/${OFICINA_WHATSAPP}?text=${encodeURIComponent(textoOficina)}`, '_blank')
 
-      mostrarSucesso(dados)
+      mostrarSucesso(dados, horarioSelecionado)
       form.reset()
       gradeHorarios.innerHTML = ''
       msgHorarios.textContent = 'Selecione uma data para ver os horários disponíveis.'
@@ -437,9 +436,9 @@
       erroGeral.classList.add('hidden')
     }
 
-    function mostrarSucesso(dados) {
+    function mostrarSucesso(dados, horaExibição) {
       const dataFmt = formatarDataBR(dados.data_agendamento)
-      modalDetalhes.textContent = `A sua solicitação para ${dados.veiculo_modelo} no dia ${dataFmt} às ${dados.hora_agendamento} foi enviada para a oficina!`
+      modalDetalhes.textContent = `A sua solicitação para ${dados.veiculo_modelo} no dia ${dataFmt} às ${horaExibição} foi enviada para a oficina!`
       modalSucesso.classList.remove('hidden')
     }
     btnFecharModal.addEventListener('click', () => modalSucesso.classList.add('hidden'))

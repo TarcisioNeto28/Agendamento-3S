@@ -145,7 +145,6 @@
     filtroData.addEventListener('change', carregarAgendamentos)
 
     const STATUS_ESTILO = {
-      pendente:   { texto: 'Pendente',   cor: 'text-yellow-500 border-yellow-500/40 bg-yellow-500/10' },
       confirmado: { texto: 'Confirmado', cor: 'text-accent border-accent/40 bg-accent/10' },
       concluido:  { texto: 'Concluído',  cor: 'text-ok border-ok/40 bg-ok/10' },
       cancelado:  { texto: 'Cancelado',  cor: 'text-danger border-danger/40 bg-danger/10' },
@@ -182,7 +181,7 @@
       const div = document.createElement('div')
       div.className = 'bg-panel border border-edge rounded-xl p-4 sm:p-5'
 
-      const st = STATUS_ESTILO[item.status] || STATUS_ESTILO.pendente
+      const st = STATUS_ESTILO[item.status] || STATUS_ESTILO.confirmado
 
       div.innerHTML = `
         <div class="flex flex-wrap items-start justify-between gap-3">
@@ -213,41 +212,27 @@
         </div>
 
         <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-edge">
-          ${item.status === 'pendente' ? `
-            <button data-acao="confirmar" class="flex-1 bg-ok/10 hover:bg-ok/20 border border-ok/40 text-ok text-sm font-medium rounded-lg py-2 transition">Confirmar e Notificar Cliente</button>
-          ` : ''}
+          <button data-acao="notificar" class="flex-1 bg-accent/10 hover:bg-accent/20 border border-accent/40 text-accent text-sm font-medium rounded-lg py-2 transition">Enviar Confirmação no WhatsApp</button>
           ${item.status === 'confirmado' ? `
-            <button data-acao="concluido" class="flex-1 bg-ok/10 hover:bg-ok/20 border border-ok/40 text-ok text-sm font-medium rounded-lg py-2 transition">Marcar como concluído</button>
-          ` : ''}
-          ${(item.status === 'pendente' || item.status === 'confirmado') ? `
+            <button data-acao="concluido" class="flex-1 bg-ok/10 hover:bg-ok/20 border border-ok/40 text-ok text-sm font-medium rounded-lg py-2 transition">Concluído</button>
             <button data-acao="cancelado" class="flex-1 bg-danger/10 hover:bg-danger/20 border border-danger/40 text-danger text-sm font-medium rounded-lg py-2 transition">Cancelar</button>
           ` : ''}
         </div>
       `
 
-      const btnConfirmar = div.querySelector('[data-acao="confirmar"]')
+      const btnNotificar = div.querySelector('[data-acao="notificar"]')
       const btnConcluido = div.querySelector('[data-acao="concluido"]')
       const btnCancelado = div.querySelector('[data-acao="cancelado"]')
 
-      if (btnConfirmar) btnConfirmar.addEventListener('click', () => confirmarENotificar(item))
+      if (btnNotificar) btnNotificar.addEventListener('click', () => notificarClienteWhatsApp(item))
       if (btnConcluido) btnConcluido.addEventListener('click', () => atualizarStatus(item.id, 'concluido'))
       if (btnCancelado) btnCancelado.addEventListener('click', () => atualizarStatus(item.id, 'cancelado'))
 
       return div
     }
 
-    // Requisito 2: Confirmação e retorno no WhatsApp do cliente
-    async function confirmarENotificar(item) {
-      const { error } = await supabase
-        .from('agendamentos')
-        .update({ status: 'confirmado' })
-        .eq('id', item.id)
-
-      if (error) {
-        alert('Não foi possível confirmar: ' + error.message)
-        return
-      }
-
+    // Requisito 2: Botão no painel para responder e confirmar direto no WhatsApp do cliente
+    function notificarClienteWhatsApp(item) {
       const numLimpo = item.cliente_whatsapp.replace(/\D/g, '')
       const numCompleto = numLimpo.length <= 11 ? '55' + numLimpo : numLimpo
       const dataFmt = formatarDataBR(item.data_agendamento)
@@ -264,7 +249,6 @@
       ].join('\n')
 
       window.open(`https://wa.me/${numCompleto}?text=${encodeURIComponent(textoCliente)}`, '_blank')
-      carregarAgendamentos()
     }
 
     async function atualizarStatus(id, novoStatus) {

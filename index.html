@@ -339,10 +339,11 @@
         .from('agendamentos')
         .select('hora_agendamento')
         .eq('data_agendamento', dataSelecionada)
-        .in('status', ['confirmado', 'pendente'])
+        .eq('status', 'confirmado')
 
       if (error) {
         mostrarErro('Não foi possível carregar os horários. Verifique sua conexão e tente novamente.')
+        console.error(error)
         return
       }
 
@@ -383,8 +384,7 @@
         categoria_problema: categoria,
         descricao_problema: descricao,
         data_agendamento: inputData.value,
-        hora_agendamento: horarioSelecionado,
-        status: 'pendente'
+        hora_agendamento: horarioSelecionado
       }
 
       btnEnviar.disabled = true
@@ -396,11 +396,12 @@
       btnEnviar.textContent = 'Solicitar Agendamento'
 
       if (error) {
+        console.error('Erro ao inserir agendamento:', error)
         if (error.code === '23505') {
           mostrarErro('Esse horário acabou de ser reservado por outro cliente. Escolha outro horário.')
           await carregarDisponibilidade()
         } else {
-          mostrarErro('Não foi possível concluir o agendamento. Tente novamente.')
+          mostrarErro('Não foi possível concluir o agendamento. Detalhes: ' + (error.message || 'Erro de permissão no banco.'))
         }
         return
       }
@@ -438,7 +439,7 @@
 
     function mostrarSucesso(dados) {
       const dataFmt = formatarDataBR(dados.data_agendamento)
-      modalDetalhes.textContent = `A sua solicitação para ${dados.veiculo_modelo} no dia ${dataFmt} às ${dados.hora_agendamento} foi enviada para a oficina. Aguarde a confirmação via WhatsApp!`
+      modalDetalhes.textContent = `A sua solicitação para ${dados.veiculo_modelo} no dia ${dataFmt} às ${dados.hora_agendamento} foi enviada para a oficina!`
       modalSucesso.classList.remove('hidden')
     }
     btnFecharModal.addEventListener('click', () => modalSucesso.classList.add('hidden'))

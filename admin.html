@@ -38,9 +38,6 @@
 
 <body class="bg-bg text-ink font-body min-h-screen">
 
-  <!-- ============================================================= -->
-  <!-- TELA DE SENHA -->
-  <!-- ============================================================= -->
   <div id="tela-login" class="min-h-screen flex items-center justify-center p-4">
     <form id="form-login" class="bg-panel border border-edge rounded-2xl p-8 max-w-sm w-full">
       <div class="w-11 h-11 rounded-md bg-panel2 border border-edge flex items-center justify-center mb-4">
@@ -55,9 +52,6 @@
     </form>
   </div>
 
-  <!-- ============================================================= -->
-  <!-- PAINEL -->
-  <!-- ============================================================= -->
   <div id="painel" class="hidden">
     <header class="border-b border-edge">
       <div class="h-1.5 stripe-edge"></div>
@@ -76,8 +70,6 @@
     </header>
 
     <main class="max-w-5xl mx-auto px-5 py-8 space-y-5">
-
-      <!-- Filtro de data -->
       <div class="bg-panel border border-edge rounded-xl p-4 sm:p-5 flex flex-wrap items-end gap-4">
         <div>
           <label for="filtro-data" class="block text-sm text-dim mb-1.5">Data</label>
@@ -88,7 +80,6 @@
         <div id="contagem" class="ml-auto text-dim text-sm self-center"></div>
       </div>
 
-      <!-- Lista -->
       <div id="lista-agendamentos" class="space-y-3"></div>
       <p id="estado-vazio" class="hidden text-center text-dim text-sm py-10">Nenhum agendamento para esta data.</p>
     </main>
@@ -97,22 +88,12 @@
   <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-    // ---------------------------------------------------------------
-    // CONFIGURAÇÃO — substitua pelos dados do seu projeto Supabase
-    // ---------------------------------------------------------------
     const SUPABASE_URL = 'https://ovnvitmvvpftlyphuddf.supabase.co'
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92bnZpdG12dnBmdGx5cGh1ZGRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5Mzg5NDcsImV4cCI6MjEwMTUxNDk0N30.x1e-jEt1SzRYT9ftjkWo8PzN3JL6UefomePi1XwpzIU'
-
-    // Senha simples de acesso ao painel (troque por algo só seu).
-    // Atenção: isso é uma proteção básica no navegador, não uma autenticação
-    // real. Para múltiplos funcionários ou mais segurança, use Supabase Auth.
     const ADMIN_PASSWORD = '3sautomotiva'
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-    // ---------------------------------------------------------------
-    // LOGIN SIMPLES (sessão do navegador)
-    // ---------------------------------------------------------------
     const telaLogin  = document.getElementById('tela-login')
     const painel     = document.getElementById('painel')
     const formLogin  = document.getElementById('form-login')
@@ -144,9 +125,6 @@
       location.reload()
     })
 
-    // ---------------------------------------------------------------
-    // FILTRO DE DATA
-    // ---------------------------------------------------------------
     const filtroData = document.getElementById('filtro-data')
     const lista = document.getElementById('lista-agendamentos')
     const estadoVazio = document.getElementById('estado-vazio')
@@ -166,10 +144,8 @@
     document.getElementById('btn-atualizar').addEventListener('click', carregarAgendamentos)
     filtroData.addEventListener('change', carregarAgendamentos)
 
-    // ---------------------------------------------------------------
-    // CARREGAR E RENDERIZAR AGENDAMENTOS
-    // ---------------------------------------------------------------
     const STATUS_ESTILO = {
+      pendente:   { texto: 'Pendente',   cor: 'text-yellow-500 border-yellow-500/40 bg-yellow-500/10' },
       confirmado: { texto: 'Confirmado', cor: 'text-accent border-accent/40 bg-accent/10' },
       concluido:  { texto: 'Concluído',  cor: 'text-ok border-ok/40 bg-ok/10' },
       cancelado:  { texto: 'Cancelado',  cor: 'text-danger border-danger/40 bg-danger/10' },
@@ -206,8 +182,7 @@
       const div = document.createElement('div')
       div.className = 'bg-panel border border-edge rounded-xl p-4 sm:p-5'
 
-      const st = STATUS_ESTILO[item.status] || STATUS_ESTILO.confirmado
-      const ativo = item.status === 'confirmado'
+      const st = STATUS_ESTILO[item.status] || STATUS_ESTILO.pendente
 
       div.innerHTML = `
         <div class="flex flex-wrap items-start justify-between gap-3">
@@ -237,19 +212,59 @@
           </div>` : ''}
         </div>
 
-        ${ativo ? `
-        <div class="flex gap-2 mt-4 pt-4 border-t border-edge">
-          <button data-acao="concluido" class="flex-1 bg-ok/10 hover:bg-ok/20 border border-ok/40 text-ok text-sm font-medium rounded-lg py-2 transition">Marcar como concluído</button>
-          <button data-acao="cancelado" class="flex-1 bg-danger/10 hover:bg-danger/20 border border-danger/40 text-danger text-sm font-medium rounded-lg py-2 transition">Cancelar</button>
-        </div>` : ''}
+        <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-edge">
+          ${item.status === 'pendente' ? `
+            <button data-acao="confirmar" class="flex-1 bg-ok/10 hover:bg-ok/20 border border-ok/40 text-ok text-sm font-medium rounded-lg py-2 transition">Confirmar e Notificar Cliente</button>
+          ` : ''}
+          ${item.status === 'confirmado' ? `
+            <button data-acao="concluido" class="flex-1 bg-ok/10 hover:bg-ok/20 border border-ok/40 text-ok text-sm font-medium rounded-lg py-2 transition">Marcar como concluído</button>
+          ` : ''}
+          ${(item.status === 'pendente' || item.status === 'confirmado') ? `
+            <button data-acao="cancelado" class="flex-1 bg-danger/10 hover:bg-danger/20 border border-danger/40 text-danger text-sm font-medium rounded-lg py-2 transition">Cancelar</button>
+          ` : ''}
+        </div>
       `
 
-      if (ativo) {
-        div.querySelector('[data-acao="concluido"]').addEventListener('click', () => atualizarStatus(item.id, 'concluido'))
-        div.querySelector('[data-acao="cancelado"]').addEventListener('click', () => atualizarStatus(item.id, 'cancelado'))
-      }
+      const btnConfirmar = div.querySelector('[data-acao="confirmar"]')
+      const btnConcluido = div.querySelector('[data-acao="concluido"]')
+      const btnCancelado = div.querySelector('[data-acao="cancelado"]')
+
+      if (btnConfirmar) btnConfirmar.addEventListener('click', () => confirmarENotificar(item))
+      if (btnConcluido) btnConcluido.addEventListener('click', () => atualizarStatus(item.id, 'concluido'))
+      if (btnCancelado) btnCancelado.addEventListener('click', () => atualizarStatus(item.id, 'cancelado'))
 
       return div
+    }
+
+    // Requisito 2: Confirmação e retorno no WhatsApp do cliente
+    async function confirmarENotificar(item) {
+      const { error } = await supabase
+        .from('agendamentos')
+        .update({ status: 'confirmado' })
+        .eq('id', item.id)
+
+      if (error) {
+        alert('Não foi possível confirmar: ' + error.message)
+        return
+      }
+
+      const numLimpo = item.cliente_whatsapp.replace(/\D/g, '')
+      const numCompleto = numLimpo.length <= 11 ? '55' + numLimpo : numLimpo
+      const dataFmt = formatarDataBR(item.data_agendamento)
+
+      const textoCliente = [
+        `Olá *${item.cliente_nome}*! 👋`,
+        `Seu agendamento na *3S Elétrica Automotiva* foi *CONFIRMADO* com sucesso!`,
+        ``,
+        `📅 *Data:* ${dataFmt}`,
+        `⏰ *Horário:* ${item.hora_agendamento.slice(0,5)}`,
+        `🚗 *Veículo:* ${item.veiculo_modelo}`,
+        ``,
+        `Te aguardamos na oficina!`
+      ].join('\n')
+
+      window.open(`https://wa.me/${numCompleto}?text=${encodeURIComponent(textoCliente)}`, '_blank')
+      carregarAgendamentos()
     }
 
     async function atualizarStatus(id, novoStatus) {
@@ -265,9 +280,12 @@
         alert('Não foi possível atualizar: ' + error.message)
         return
       }
-      // Cancelar libera automaticamente o horário para novos clientes,
-      // graças ao índice único parcial (status = 'confirmado') do banco.
       carregarAgendamentos()
+    }
+
+    function formatarDataBR(iso) {
+      const [ano, mes, dia] = iso.split('-')
+      return `${dia}/${mes}/${ano}`
     }
 
     function escapeHtml(str) {

@@ -70,18 +70,57 @@
     </header>
 
     <main class="max-w-5xl mx-auto px-5 py-8 space-y-5">
-      <div class="bg-panel border border-edge rounded-xl p-4 sm:p-5 flex flex-wrap items-end gap-4">
-        <div>
-          <label for="filtro-data" class="block text-sm text-dim mb-1.5">Data</label>
-          <input id="filtro-data" type="date" class="bg-panel2 border border-edge rounded-lg px-3.5 py-2.5 text-ink font-mono focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent" />
-        </div>
-        <button id="btn-hoje" class="border border-edge hover:border-accent text-dim hover:text-accent text-sm rounded-lg px-4 py-2.5 transition">Hoje</button>
-        <button id="btn-atualizar" class="border border-edge hover:border-accent text-dim hover:text-accent text-sm rounded-lg px-4 py-2.5 transition">Atualizar</button>
-        <div id="contagem" class="ml-auto text-dim text-sm self-center"></div>
+      
+      <!-- ABAS DE NAVEGAÇÃO -->
+      <div class="flex border-b border-edge gap-4 text-sm font-medium">
+        <button id="aba-diario" class="pb-3 border-b-2 border-accent text-accent font-semibold">Agendamentos Diários</button>
+        <button id="aba-relatorio" class="pb-3 border-b-2 border-transparent text-dim hover:text-ink">Relatório Mensal / Exportação</button>
       </div>
 
-      <div id="lista-agendamentos" class="space-y-3"></div>
-      <p id="estado-vazio" class="hidden text-center text-dim text-sm py-10">Nenhum agendamento para esta data.</p>
+      <!-- SEÇÃO 1: VISÃO DIÁRIA -->
+      <div id="secao-diario" class="space-y-5">
+        <div class="bg-panel border border-edge rounded-xl p-4 sm:p-5 flex flex-wrap items-end gap-4">
+          <div>
+            <label for="filtro-data" class="block text-sm text-dim mb-1.5">Data</label>
+            <input id="filtro-data" type="date" class="bg-panel2 border border-edge rounded-lg px-3.5 py-2.5 text-ink font-mono focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent" />
+          </div>
+          <button id="btn-hoje" class="border border-edge hover:border-accent text-dim hover:text-accent text-sm rounded-lg px-4 py-2.5 transition">Hoje</button>
+          <button id="btn-atualizar" class="border border-edge hover:border-accent text-dim hover:text-accent text-sm rounded-lg px-4 py-2.5 transition">Atualizar</button>
+          <div id="contagem" class="ml-auto text-dim text-sm self-center"></div>
+        </div>
+
+        <div id="lista-agendamentos" class="space-y-3"></div>
+        <p id="estado-vazio" class="hidden text-center text-dim text-sm py-10">Nenhum agendamento para esta data.</p>
+      </div>
+
+      <!-- SEÇÃO 2: RELATÓRIO MENSAL -->
+      <div id="secao-relatorio" class="hidden space-y-5">
+        <div class="bg-panel border border-edge rounded-xl p-4 sm:p-5 flex flex-wrap items-end justify-between gap-4">
+          <div class="flex flex-wrap items-end gap-4">
+            <div>
+              <label for="filtro-mes" class="block text-sm text-dim mb-1.5">Mês de Referência</label>
+              <input id="filtro-mes" type="month" class="bg-panel2 border border-edge rounded-lg px-3.5 py-2.5 text-ink font-mono focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent" />
+            </div>
+            <div>
+              <label for="filtro-status-relatorio" class="block text-sm text-dim mb-1.5">Status</label>
+              <select id="filtro-status-relatorio" class="bg-panel2 border border-edge rounded-lg px-3.5 py-2.5 text-ink focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent">
+                <option value="concluido" selected>Apenas Concluídos</option>
+                <option value="todos">Todos os Status</option>
+              </select>
+            </div>
+            <button id="btn-buscar-relatorio" class="bg-panel2 border border-edge hover:border-accent text-dim hover:text-accent text-sm rounded-lg px-4 py-2.5 transition">Filtrar Mês</button>
+          </div>
+
+          <button id="btn-exportar-csv" class="bg-ok/10 hover:bg-ok/20 border border-ok/40 text-ok text-sm font-semibold rounded-lg px-5 py-2.5 transition flex items-center gap-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Exportar CSV
+          </button>
+        </div>
+
+        <div id="lista-relatorio" class="space-y-3"></div>
+        <p id="estado-vazio-relatorio" class="hidden text-center text-dim text-sm py-10">Nenhum registro encontrado para este mês.</p>
+      </div>
+
     </main>
   </div>
 
@@ -125,6 +164,28 @@
       location.reload()
     })
 
+    // CONTROLE DE ABAS
+    const abaDiario = document.getElementById('aba-diario')
+    const abaRelatorio = document.getElementById('aba-relatorio')
+    const secaoDiario = document.getElementById('secao-diario')
+    const secaoRelatorio = document.getElementById('secao-relatorio')
+
+    abaDiario.addEventListener('click', () => {
+      abaDiario.className = 'pb-3 border-b-2 border-accent text-accent font-semibold'
+      abaRelatorio.className = 'pb-3 border-b-2 border-transparent text-dim hover:text-ink'
+      secaoDiario.classList.remove('hidden')
+      secaoRelatorio.classList.add('hidden')
+    })
+
+    abaRelatorio.addEventListener('click', () => {
+      abaRelatorio.className = 'pb-3 border-b-2 border-accent text-accent font-semibold'
+      abaDiario.className = 'pb-3 border-b-2 border-transparent text-dim hover:text-ink'
+      secaoRelatorio.classList.remove('hidden')
+      secaoDiario.classList.add('hidden')
+      carregarRelatorioMensal()
+    })
+
+    // CONTROLE DIÁRIO
     const filtroData = document.getElementById('filtro-data')
     const lista = document.getElementById('lista-agendamentos')
     const estadoVazio = document.getElementById('estado-vazio')
@@ -197,7 +258,7 @@
 
         <div class="grid sm:grid-cols-2 gap-3 mt-4 text-sm">
           <div>
-            <p class="text-dim text-xs mb-0.5">Categoria</p>
+            <p class="text-dim text-xs mb-0.5">Categoria Solicitada</p>
             <p class="text-ink">${escapeHtml(item.categoria_problema)}</p>
           </div>
           <div>
@@ -206,9 +267,17 @@
           </div>
           ${item.descricao_problema ? `
           <div class="sm:col-span-2">
-            <p class="text-dim text-xs mb-0.5">Descrição</p>
+            <p class="text-dim text-xs mb-0.5">Descrição do Problema</p>
             <p class="text-ink">${escapeHtml(item.descricao_problema)}</p>
           </div>` : ''}
+          
+          <div class="sm:col-span-2 mt-2 pt-2 border-t border-edge/50">
+            <label class="text-dim text-xs block mb-1">Serviço Executado (Oficina):</label>
+            <div class="flex gap-2">
+              <input type="text" data-campo="servico" value="${escapeHtml(item.servico_executado || '')}" placeholder="Ex: Troca de alternador e bateria" class="flex-1 bg-panel2 border border-edge rounded-lg px-3 py-1.5 text-ink text-sm focus:outline-none focus:ring-1 focus:ring-accent" />
+              <button data-acao="salvar-servico" class="bg-panel2 hover:bg-edge border border-edge text-ink text-xs px-3 py-1.5 rounded-lg transition">Salvar</button>
+            </div>
+          </div>
         </div>
 
         <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-edge">
@@ -223,10 +292,25 @@
       const btnNotificar = div.querySelector('[data-acao="notificar"]')
       const btnConcluido = div.querySelector('[data-acao="concluido"]')
       const btnCancelado = div.querySelector('[data-acao="cancelado"]')
+      const btnSalvarServico = div.querySelector('[data-acao="salvar-servico"]')
+      const inputServico = div.querySelector('[data-campo="servico"]')
 
       if (btnNotificar) btnNotificar.addEventListener('click', () => notificarClienteWhatsApp(item))
       if (btnConcluido) btnConcluido.addEventListener('click', () => atualizarStatus(item.id, 'concluido'))
       if (btnCancelado) btnCancelado.addEventListener('click', () => atualizarStatus(item.id, 'cancelado'))
+      
+      if (btnSalvarServico) {
+        btnSalvarServico.addEventListener('click', async () => {
+          const textoServico = inputServico.value.trim()
+          const { error } = await supabase
+            .from('agendamentos')
+            .update({ servico_executado: textoServico })
+            .eq('id', item.id)
+
+          if (error) alert('Erro ao salvar serviço: ' + error.message)
+          else alert('Serviço atualizado com sucesso!')
+        })
+      }
 
       return div
     }
@@ -266,7 +350,95 @@
       carregarAgendamentos()
     }
 
+    // LÓGICA DE RELATÓRIO MENSAL E EXPORTAÇÃO
+    const filtroMes = document.getElementById('filtro-mes')
+    const filtroStatusRelatorio = document.getElementById('filtro-status-relatorio')
+    const listaRelatorio = document.getElementById('lista-relatorio')
+    const estadoVazioRelatorio = document.getElementById('estado-vazio-relatorio')
+
+    filtroMes.value = hojeISO().slice(0, 7) // formato YYYY-MM
+
+    document.getElementById('btn-buscar-relatorio').addEventListener('click', carregarRelatorioMensal)
+
+    let dadosRelatorioAtual = []
+
+    async function carregarRelatorioMensal() {
+      listaRelatorio.innerHTML = '<p class="text-dim text-sm text-center py-10">Carregando relatório...</p>'
+      estadoVazioRelatorio.classList.add('hidden')
+
+      const [ano, mes] = filtroMes.value.split('-')
+      
+      // Define primeiro e último dia do mês
+      const inicioMes = `${ano}-${mes}-01`
+      const ultimoDiaNum = new Date(ano, mes, 0).getDate()
+      const fimMes = `${ano}-${mes}-${ultimoDiaNum}`
+
+      let query = supabase
+        .from('agendamentos')
+        .select('*')
+        .gte('data_agendamento', inicioMes)
+        .lte('data_agendamento', fimMes)
+        .order('data_agendamento', { ascending: true })
+
+      if (filtroStatusRelatorio.value === 'concluido') {
+        query = query.eq('status', 'concluido')
+      }
+
+      const { data, error } = await query
+
+      if (error) {
+        listaRelatorio.innerHTML = `<p class="text-danger text-sm text-center py-10">Erro: ${error.message}</p>`
+        return
+      }
+
+      dadosRelatorioAtual = data
+
+      if (data.length === 0) {
+        listaRelatorio.innerHTML = ''
+        estadoVazioRelatorio.classList.remove('hidden')
+        return
+      }
+
+      listaRelatorio.innerHTML = ''
+      data.forEach(item => listaRelatorio.appendChild(criarCard(item)))
+    }
+
+    // EXPORTAÇÃO CSV
+    document.getElementById('btn-exportar-csv').addEventListener('click', () => {
+      if (!dadosRelatorioAtual || dadosRelatorioAtual.length === 0) {
+        alert('Não há dados para exportar neste mês.')
+        return
+      }
+
+      const cabecalhos = ['Data', 'Hora', 'Cliente', 'WhatsApp', 'Veículo', 'Placa', 'Categoria', 'Status', 'Serviço Executado']
+      
+      const linhas = dadosRelatorioAtual.map(item => [
+        formatarDataBR(item.data_agendamento),
+        item.hora_agendamento.slice(0,5),
+        `"${(item.cliente_nome || '').replace(/"/g, '""')}"`,
+        `"${(item.cliente_whatsapp || '').replace(/"/g, '""')}"`,
+        `"${(item.veiculo_modelo || '').replace(/"/g, '""')}"`,
+        `"${(item.placa_veiculo || '').replace(/"/g, '""')}"`,
+        `"${(item.categoria_problema || '').replace(/"/g, '""')}"`,
+        item.status,
+        `"${(item.servico_executado || '').replace(/"/g, '""')}"`
+      ])
+
+      const conteudoCsv = '\uFEFF' + [cabecalhos.join(';'), ...linhas.map(l => l.join(';'))].join('\n')
+      
+      const blob = new Blob([conteudoCsv], { type: 'text/csv;charset=utf-8;' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      
+      link.setAttribute('href', url)
+      link.setAttribute('download', `relatorio_agendamentos_${filtroMes.value}.csv`)
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    })
+
     function formatarDataBR(iso) {
+      if (!iso) return ''
       const [ano, mes, dia] = iso.split('-')
       return `${dia}/${mes}/${ano}`
     }

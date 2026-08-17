@@ -38,6 +38,7 @@
 
 <body class="bg-bg text-ink font-body min-h-screen">
 
+  <!-- LOGIN -->
   <div id="tela-login" class="min-h-screen flex items-center justify-center p-4">
     <form id="form-login" class="bg-panel border border-edge rounded-2xl p-8 max-w-sm w-full">
       <div class="w-11 h-11 rounded-md bg-panel2 border border-edge flex items-center justify-center mb-4">
@@ -52,6 +53,7 @@
     </form>
   </div>
 
+  <!-- PAINEL -->
   <div id="painel" class="hidden">
     <header class="border-b border-edge">
       <div class="h-1.5 stripe-edge"></div>
@@ -71,13 +73,13 @@
 
     <main class="max-w-5xl mx-auto px-5 py-8 space-y-5">
       
-      <!-- ABAS DE NAVEGAÇÃO -->
+      <!-- ABAS -->
       <div class="flex border-b border-edge gap-4 text-sm font-medium">
         <button id="aba-diario" class="pb-3 border-b-2 border-accent text-accent font-semibold">Agendamentos Diários</button>
-        <button id="aba-relatorio" class="pb-3 border-b-2 border-transparent text-dim hover:text-ink">Relatório Mensal / Exportação</button>
+        <button id="aba-relatorio" class="pb-3 border-b-2 border-transparent text-dim hover:text-ink">Relatório Mensal e Faturamento</button>
       </div>
 
-      <!-- SEÇÃO 1: VISÃO DIÁRIA -->
+      <!-- VISÃO DIÁRIA -->
       <div id="secao-diario" class="space-y-5">
         <div class="bg-panel border border-edge rounded-xl p-4 sm:p-5 flex flex-wrap items-end gap-4">
           <div>
@@ -93,7 +95,7 @@
         <p id="estado-vazio" class="hidden text-center text-dim text-sm py-10">Nenhum agendamento para esta data.</p>
       </div>
 
-      <!-- SEÇÃO 2: RELATÓRIO MENSAL -->
+      <!-- RELATÓRIO MENSAL -->
       <div id="secao-relatorio" class="hidden space-y-5">
         <div class="bg-panel border border-edge rounded-xl p-4 sm:p-5 flex flex-wrap items-end justify-between gap-4">
           <div class="flex flex-wrap items-end gap-4">
@@ -115,6 +117,18 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Exportar CSV
           </button>
+        </div>
+
+        <!-- RESUMO FINANCEIRO DO MÊS -->
+        <div id="resumo-financeiro" class="bg-panel border border-edge rounded-xl p-4 flex items-center justify-between">
+          <div>
+            <p class="text-dim text-xs uppercase tracking-wider">Total de Agendamentos</p>
+            <p id="total-qtd-mes" class="text-2xl font-bold font-mono text-ink">0</p>
+          </div>
+          <div class="text-right">
+            <p class="text-dim text-xs uppercase tracking-wider">Faturamento Total do Mês</p>
+            <p id="total-faturado-mes" class="text-2xl font-bold font-mono text-ok">R$ 0,00</p>
+          </div>
         </div>
 
         <div id="lista-relatorio" class="space-y-3"></div>
@@ -164,7 +178,7 @@
       location.reload()
     })
 
-    // CONTROLE DE ABAS
+    // NAVEGAÇÃO ENTRE ABAS
     const abaDiario = document.getElementById('aba-diario')
     const abaRelatorio = document.getElementById('aba-relatorio')
     const secaoDiario = document.getElementById('secao-diario')
@@ -271,12 +285,18 @@
             <p class="text-ink">${escapeHtml(item.descricao_problema)}</p>
           </div>` : ''}
           
-          <div class="sm:col-span-2 mt-2 pt-2 border-t border-edge/50">
-            <label class="text-dim text-xs block mb-1">Serviço Executado (Oficina):</label>
-            <div class="flex gap-2">
-              <input type="text" data-campo="servico" value="${escapeHtml(item.servico_executado || '')}" placeholder="Ex: Troca de alternador e bateria" class="flex-1 bg-panel2 border border-edge rounded-lg px-3 py-1.5 text-ink text-sm focus:outline-none focus:ring-1 focus:ring-accent" />
-              <button data-acao="salvar-servico" class="bg-panel2 hover:bg-edge border border-edge text-ink text-xs px-3 py-1.5 rounded-lg transition">Salvar</button>
+          <div class="sm:col-span-2 mt-2 pt-2 border-t border-edge/50 space-y-2">
+            <div class="grid sm:grid-cols-3 gap-2">
+              <div class="sm:col-span-2">
+                <label class="text-dim text-xs block mb-1">Serviço Executado:</label>
+                <input type="text" data-campo="servico" value="${escapeHtml(item.servico_executado || '')}" placeholder="Ex: Troca de alternador" class="w-full bg-panel2 border border-edge rounded-lg px-3 py-1.5 text-ink text-sm focus:outline-none focus:ring-1 focus:ring-accent" />
+              </div>
+              <div>
+                <label class="text-dim text-xs block mb-1">Valor Cobrado (R$):</label>
+                <input type="number" step="0.01" data-campo="valor" value="${item.valor_servico || ''}" placeholder="0.00" class="w-full bg-panel2 border border-edge rounded-lg px-3 py-1.5 text-ink text-sm font-mono focus:outline-none focus:ring-1 focus:ring-accent" />
+              </div>
             </div>
+            <button data-acao="salvar-servico" class="w-full bg-panel2 hover:bg-edge border border-edge text-accent text-xs py-2 rounded-lg transition font-medium">Salvar Alterações do Serviço</button>
           </div>
         </div>
 
@@ -294,6 +314,7 @@
       const btnCancelado = div.querySelector('[data-acao="cancelado"]')
       const btnSalvarServico = div.querySelector('[data-acao="salvar-servico"]')
       const inputServico = div.querySelector('[data-campo="servico"]')
+      const inputValor = div.querySelector('[data-campo="valor"]')
 
       if (btnNotificar) btnNotificar.addEventListener('click', () => notificarClienteWhatsApp(item))
       if (btnConcluido) btnConcluido.addEventListener('click', () => atualizarStatus(item.id, 'concluido'))
@@ -302,13 +323,24 @@
       if (btnSalvarServico) {
         btnSalvarServico.addEventListener('click', async () => {
           const textoServico = inputServico.value.trim()
+          const valorNum = parseFloat(inputValor.value) || 0
+
           const { error } = await supabase
             .from('agendamentos')
-            .update({ servico_executado: textoServico })
+            .update({ 
+              servico_executado: textoServico,
+              valor_servico: valorNum
+            })
             .eq('id', item.id)
 
-          if (error) alert('Erro ao salvar serviço: ' + error.message)
-          else alert('Serviço atualizado com sucesso!')
+          if (error) {
+            alert('Erro ao salvar serviço: ' + error.message)
+          } else {
+            alert('Serviço e valor atualizados!')
+            if (!secaoRelatorio.classList.contains('hidden')) {
+              carregarRelatorioMensal()
+            }
+          }
         })
       }
 
@@ -350,13 +382,15 @@
       carregarAgendamentos()
     }
 
-    // LÓGICA DE RELATÓRIO MENSAL E EXPORTAÇÃO
+    // RELATÓRIO MENSAL E FATURAMENTO
     const filtroMes = document.getElementById('filtro-mes')
     const filtroStatusRelatorio = document.getElementById('filtro-status-relatorio')
     const listaRelatorio = document.getElementById('lista-relatorio')
     const estadoVazioRelatorio = document.getElementById('estado-vazio-relatorio')
+    const totalQtdMes = document.getElementById('total-qtd-mes')
+    const totalFaturadoMes = document.getElementById('total-faturado-mes')
 
-    filtroMes.value = hojeISO().slice(0, 7) // formato YYYY-MM
+    filtroMes.value = hojeISO().slice(0, 7)
 
     document.getElementById('btn-buscar-relatorio').addEventListener('click', carregarRelatorioMensal)
 
@@ -368,7 +402,6 @@
 
       const [ano, mes] = filtroMes.value.split('-')
       
-      // Define primeiro e último dia do mês
       const inicioMes = `${ano}-${mes}-01`
       const ultimoDiaNum = new Date(ano, mes, 0).getDate()
       const fimMes = `${ano}-${mes}-${ultimoDiaNum}`
@@ -393,6 +426,11 @@
 
       dadosRelatorioAtual = data
 
+      // Atualizar totalizadores
+      const faturamentoTotal = data.reduce((acc, cur) => acc + Number(cur.valor_servico || 0), 0)
+      totalQtdMes.textContent = data.length
+      totalFaturadoMes.textContent = faturamentoTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+
       if (data.length === 0) {
         listaRelatorio.innerHTML = ''
         estadoVazioRelatorio.classList.remove('hidden')
@@ -403,14 +441,14 @@
       data.forEach(item => listaRelatorio.appendChild(criarCard(item)))
     }
 
-    // EXPORTAÇÃO CSV
+    // EXPORTAR CSV
     document.getElementById('btn-exportar-csv').addEventListener('click', () => {
       if (!dadosRelatorioAtual || dadosRelatorioAtual.length === 0) {
         alert('Não há dados para exportar neste mês.')
         return
       }
 
-      const cabecalhos = ['Data', 'Hora', 'Cliente', 'WhatsApp', 'Veículo', 'Placa', 'Categoria', 'Status', 'Serviço Executado']
+      const cabecalhos = ['Data', 'Hora', 'Cliente', 'WhatsApp', 'Veiculo', 'Placa', 'Categoria', 'Status', 'Servico Executado', 'Valor (R$)']
       
       const linhas = dadosRelatorioAtual.map(item => [
         formatarDataBR(item.data_agendamento),
@@ -421,7 +459,8 @@
         `"${(item.placa_veiculo || '').replace(/"/g, '""')}"`,
         `"${(item.categoria_problema || '').replace(/"/g, '""')}"`,
         item.status,
-        `"${(item.servico_executado || '').replace(/"/g, '""')}"`
+        `"${(item.servico_executado || '').replace(/"/g, '""')}"`,
+        (item.valor_servico || 0).toFixed(2).replace('.', ',')
       ])
 
       const conteudoCsv = '\uFEFF' + [cabecalhos.join(';'), ...linhas.map(l => l.join(';'))].join('\n')
